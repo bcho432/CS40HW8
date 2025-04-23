@@ -4,3 +4,4 @@ main:
     output rt
     goto r1
     
+// test
