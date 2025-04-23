@@ -1,0 +1,6 @@
+main:
+.section init
+    rt := 72
+    output rt
+    goto r1
+    

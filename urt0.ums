@@ -1,0 +1,10 @@
+.zero r0
+ .section init
+_ustart:
+ r0 := 0
+ r2 := endstack
+.section text
+.section data
+.section rodata
+.space 10000
+endstack:
