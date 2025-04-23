@@ -1,7 +1,6 @@
-main:
-.section init
-    rt := 72
-    output rt
-    goto r1
-    
-// test
+.section text
+    .temps r7
+    main:
+        r6 := 72
+        output r6
+        goto r1

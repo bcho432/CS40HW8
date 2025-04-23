@@ -1,4 +1,4 @@
 .section init
-.temps r7
+.temps r6, r7
 goto main linking r1
 halt
