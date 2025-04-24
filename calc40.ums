@@ -1,59 +1,88 @@
+.section rodata
+    jumptable:         # label pointing to start of jump table
+    .space 256         # 256 words for each possible byte value
+
 .section init
     .zero r0
     .temps r6, r7
 
-    start:
-        r3 := endvalstack
-        .section text
-        .section data
-        .section rodata
-        .space 10000
-        endvalstack:
+    r3 := endvalstack
+    .section rodata
+    .space 100000
+    endvalstack:
+
+.section init
+    r4 := 0
+    setTable:
+        r5 := jumptable + r4
+        m[r0][r5] := input_error
+        r4 := r4 + 1
+        if (r4 <s 256) goto setTable using r5
+
+    # Overwrite digit entries ('0' through '9')
+    r4 := '0'
+    setDigits:
+        r5 := jumptable + r4
+        m[r0][r5] := digit
+        r4 := r4 + 1
+        if (r4 <=s '9') goto setDigits using r5
+    
+
+    m[r0][jumptable + ' '] := waiting
+    m[r0][jumptable + '\n'] := print
+    
 
 .section text
     main:
-        goto waiting
-
-        r5 := input()
-        r5 := r5 - 48
-        push r5 on stack r3
-
         push r1 on stack r2
 
-        goto print
+        goto waiting
 
+        # r5 := input()
+        # r5 := r5 - 48
+        # push r5 on stack r3
+
+        # push r1 on stack r2
+
+        # goto print
+
+        goto return
+    
+    return:
         pop r1 off stack r2
-
         goto r1
     
     waiting:
         r5 := input()
-        r5 := r5 - 48
-
-        push r5 on stack r3
-        goto entering
+        r4 := jumptable + r5
+        goto m[r0][r4]
 
     entering:
-        push r4 on stack r2
         r5 := input()
-        r4 := -1
-        if (r5 != r4) goto mul10 using r4
-    
+        if (r5 <s '0') goto jump using r4
+        if (r5 >s '9') goto jump using r4
 
-        pop r4 off stack r2
-
-        goto r1
-        
-
-
-    mul10:
-        push r4 on stack r2
-
+        r5 := r5 - 48
         pop r4 off stack r3
         r4 := r4 * 10
-        r5 := r5 + r4
-        push r5 on stack r3
-
-        pop r4 off stack r2
+        r4 := r4 + r5
+        push r4 on stack r3
 
         goto entering
+
+
+    input_error:
+        output "Unknown character ' "
+        output r5
+        output "'\n"
+        goto waiting
+
+    digit:
+        r5 := r5 - 48
+        push r5 on stack r3
+
+        goto entering
+
+    jump:
+        r5 := jumptable + r5
+        goto m[r0][r5]
