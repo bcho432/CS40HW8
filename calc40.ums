@@ -1,0 +1,59 @@
+.section init
+    .zero r0
+    .temps r6, r7
+
+    start:
+        r3 := endvalstack
+        .section text
+        .section data
+        .section rodata
+        .space 10000
+        endvalstack:
+
+.section text
+    main:
+        goto waiting
+
+        r5 := input()
+        r5 := r5 - 48
+        push r5 on stack r3
+
+        push r1 on stack r2
+
+        goto print
+
+        pop r1 off stack r2
+
+        goto r1
+    
+    waiting:
+        r5 := input()
+        r5 := r5 - 48
+
+        push r5 on stack r3
+        goto entering
+
+    entering:
+        push r4 on stack r2
+        r5 := input()
+        r4 := -1
+        if (r5 != r4) goto mul10 using r4
+    
+
+        pop r4 off stack r2
+
+        goto r1
+        
+
+
+    mul10:
+        push r4 on stack r2
+
+        pop r4 off stack r3
+        r4 := r4 * 10
+        r5 := r5 + r4
+        push r5 on stack r3
+
+        pop r4 off stack r2
+
+        goto entering
