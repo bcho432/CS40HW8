@@ -1,4 +1,4 @@
 .section init
-.temps r6, r7
-goto main linking r1
-halt
+    .temps r6, r7
+    goto print linking r1
+    halt

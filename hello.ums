@@ -1,5 +1,6 @@
+.temps r7
+
 .section text
-    .temps r7
     main:
         r6 := 72
         output r6
