@@ -9,27 +9,29 @@ print:
     
     push r1 on stack r2 # save previous r1
 
-    r1 := r3 # address of r3 stack before adding digits
+    r1 := r3 # address of r3 stack before adding digits (so that we know when to stop printing digits)
     push r1 on stack r2
 
-    r1 := r3 + r4 # address of r3 stack before adding digits + reach
+    r1 := r3 + r4 # r1 = top of r3 stack + reach
 
     output ">>> "
     r5 := m[r0][r1] # get the value at the top of stack + reach
+    # output r5 + 48
 
     if (r5 == r0) goto zero using r1
-    if (r5 >s r0) goto positive using r1
+    if (r5 >=s r0) goto positive using r1
     goto negative
 
 
 afterPrint:
-    pop r1 off stack r2
-    pop r5 off stack r2
+    pop r1 off stack r2 
+    pop r5 off stack r2 # put the counter variable from calc40 back into r5
     output '\n'
 
     goto printLoop
 
 zero:
+    pop r1 off stack r2
     output '0'
     goto afterPrint
 

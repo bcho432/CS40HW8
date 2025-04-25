@@ -32,13 +32,15 @@
     m[r0][jumptable + '*'] := multiply
     m[r0][jumptable + '+'] := add
     m[r0][jumptable + '-'] := subtract
+    m[r0][jumptable + '/'] := divide
     m[r0][jumptable + '&'] := and
     m[r0][jumptable + '|'] := or
+    m[r0][jumptable + '~'] := not
     m[r0][jumptable + 'c'] := flip
     m[r0][jumptable + 's'] := swap
     m[r0][jumptable + 'd'] := duplicate
-    m[r0][jumptable + 'p'] := getthatshitouttahere
-    m[r0][jumptable + 'z'] := getallthatshitouttahere
+    m[r0][jumptable + 'p'] := popTop
+    m[r0][jumptable + 'z'] := popAll
 
     m[r0][jumptable + '\n'] := callPrint
     
@@ -46,25 +48,22 @@
 .section text
     main:
         push r1 on stack r2
-
         goto waiting
-
-        # r5 := input()
-        # r5 := r5 - 48
-        # push r5 on stack r3
-
-        # push r1 on stack r2
-
-        # goto print
-
-        goto return
     
     return:
+        pop r5 off stack r2
         pop r1 off stack r2
         goto r1
     
     waiting:
         r5 := input()
+        push r5 on stack r2
+
+        r4 := r5 nand r5
+        if (r4 == r0) goto return using r5
+
+        pop r5 off stack r2
+        
         r4 := jumptable + r5
         goto m[r0][r4]
 
@@ -107,19 +106,19 @@
     callPrint:
         push r5 on stack r2
         push r4 on stack r2
-        r5 := endvalstack - r3
+        r5 := endvalstack - r3 # size of the r3 stack
         goto printLoop
 
     
     printLoop:
         if (r5 == r0) goto cleanPrint using r4
-        r5 := r5 - 1
-        r4 := endvalstack - r3
-        r4 := r4 - 1
-        r4 := r4 - r5
+        r5 := r5 - 1 # r5 is the iterator that will tell us when to stop
+        r4 := endvalstack - r3 # size of r3 stack
+        r4 := r4 - 1  # we want the size minus 1 to get the reach amount
+        r4 := r4 - r5 # size - 1 - iterator = amount to reach down into r3 stack
         
-        push r5 on stack r2 # keep counter
-        push r4 on stack r2 # reach number
+        push r5 on stack r2 # keep counter on r2 stack
+        push r4 on stack r2 # keep reach number on r2 stack
         goto print
 
     cleanPrint:
@@ -142,10 +141,7 @@
         r4 := r4 * r5
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
-
-        goto waiting
+        goto instructionEnd
 
     add:
         push r4 on stack r2
@@ -158,10 +154,7 @@
         r4 := r4 + r5
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
-
-        goto waiting
+        goto instructionEnd
 
     subtract:
         push r4 on stack r2
@@ -174,10 +167,72 @@
         r4 := r5 - r4
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
+        goto instructionEnd
 
-        goto waiting
+    divide:
+        push r4 on stack r2
+        push r5 on stack r2
+
+        push r1 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        pop r1 off stack r2
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        if (r4 == r0) goto divZero using r1 # case for diving by zero
+        # case for when the first number is a negative i
+        if (r4 <s r0) goto divFirstNeg using r1 
+        # case for when the second number is negative, 
+        if (r5 <s r0) goto divPosNeg using r1
+        
+        # Pos pos division
+        r4 := r5 / r4
+        push r4 on stack r3
+
+        goto instructionEnd
+
+    divZero:
+        pop r1 off stack r2
+        push r5 on stack r3
+        push r4 on stack r3
+        output "Division by zero\n"
+        goto instructionEnd
+
+    divFirstNeg:
+        # if r5 is also less than zero, then this mean both the numbers are 
+        # negative
+        if (r5 <s r0) goto divNegNeg using r1 
+        # else, this means the second number is positive 
+        goto divNegPos using r1
+
+    divNegNeg:
+        # case for dividing two numbers when both numbers are negative
+        r4 := -r4
+        r5 := -r5
+        r4 := r5 / r4
+        push r4 on stack r3
+
+        goto instructionEnd
+
+    divNegPos:
+        # case for diving when first number is negative and second number 
+        # is positive
+        r4 := -r4
+        r4 := r5 / r4
+        r4 := -r4
+        push r4 on stack r3
+
+        goto instructionEnd
+    
+    divPosNeg:
+        r5 := -r5
+        r4 := r5 / r4
+        r4 := -r4
+        push r4 on stack r3
+        
+        goto instructionEnd
 
     and:
         push r4 on stack r2
@@ -190,10 +245,7 @@
         r4 := r5 & r4
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
-
-        goto waiting
+        goto instructionEnd
 
     or:
         push r4 on stack r2
@@ -206,10 +258,7 @@
         r4 := r5 | r4
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
-
-        goto waiting
+        goto instructionEnd
 
     swap:
         push r4 on stack r2
@@ -229,14 +278,30 @@
         push r4 on stack r3
 
         pop r1 off stack r2
+        
+        goto instructionEnd
+
+
+    instructionEnd:
         pop r5 off stack r2
         pop r4 off stack r2
 
         goto waiting
-
     
     # UNARY OPERATIONS #########################################################
 
+    not:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 1) goto printUnderflow1 using r4
+
+        pop r4 off stack r3
+        r4 := ~r4
+        push r4 on stack r3
+
+        goto instructionEnd
+    
     flip:
         push r4 on stack r2
         push r5 on stack r2
@@ -247,10 +312,7 @@
         r4 := -r4
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
-
-        goto waiting
+        goto instructionEnd
     
 
     duplicate:
@@ -263,12 +325,10 @@
         push r4 on stack r3
         push r4 on stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
+        goto instructionEnd
 
-        goto waiting
 
-    getthatshitouttahere:
+    popTop:
         push r4 on stack r2
         push r5 on stack r2
         r5 := endvalstack - r3 # num elements on r3 stack
@@ -276,17 +336,14 @@
 
         pop r4 off stack r3
 
-        pop r5 off stack r2
-        pop r4 off stack r2
-
-        goto waiting
+        goto instructionEnd
     
 
     
     
     # OTHER OPERATIONS #########################################################
 
-    getallthatshitouttahere:
+    popAll:
         r3 := endvalstack
         goto waiting
 
@@ -294,6 +351,7 @@
     printUnderflow2:
         pop r5 off stack r2
         pop r4 off stack r2
+        
         output "Stack underflow---expected at least 2 elements\n"
         goto waiting
     
