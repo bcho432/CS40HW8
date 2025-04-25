@@ -30,6 +30,16 @@
 
     m[r0][jumptable + ' '] := waiting
     m[r0][jumptable + '*'] := multiply
+    m[r0][jumptable + '+'] := add
+    m[r0][jumptable + '-'] := subtract
+    m[r0][jumptable + '&'] := and
+    m[r0][jumptable + '|'] := or
+    m[r0][jumptable + 'c'] := flip
+    m[r0][jumptable + 's'] := swap
+    m[r0][jumptable + 'd'] := duplicate
+    m[r0][jumptable + 'p'] := getthatshitouttahere
+    m[r0][jumptable + 'z'] := getallthatshitouttahere
+
     m[r0][jumptable + '\n'] := callPrint
     
 
@@ -94,12 +104,6 @@
         r5 := jumptable + r5
         goto m[r0][r5]
 
-    multiply:
-        output "in multiply"
-
-
-        goto waiting
-
     callPrint:
         push r5 on stack r2
         push r4 on stack r2
@@ -121,4 +125,180 @@
     cleanPrint:
         pop r4 off stack r2
         pop r5 off stack r2
+        goto waiting
+
+
+
+    # BINARY OPERATIONS ########################################################
+
+    multiply:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+        r4 := r4 * r5
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    add:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+        r4 := r4 + r5
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    subtract:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+        r4 := r5 - r4
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    and:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+        r4 := r5 & r4
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    or:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+        r4 := r5 | r4
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    swap:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 2) goto printUnderflow2 using r4
+
+        push r1 on stack r2
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+        r1 := r4
+        r4 := r5
+        r5 := r1
+
+        push r5 on stack r3
+        push r4 on stack r3
+
+        pop r1 off stack r2
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    
+    # UNARY OPERATIONS #########################################################
+
+    flip:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 1) goto printUnderflow1 using r4
+
+        pop r4 off stack r3
+        r4 := -r4
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+    
+
+    duplicate:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 1) goto printUnderflow1 using r4
+
+        pop r4 off stack r3
+        push r4 on stack r3
+        push r4 on stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+
+    getthatshitouttahere:
+        push r4 on stack r2
+        push r5 on stack r2
+        r5 := endvalstack - r3 # num elements on r3 stack
+        if (r5 <s 1) goto printUnderflow1 using r4
+
+        pop r4 off stack r3
+
+        pop r5 off stack r2
+        pop r4 off stack r2
+
+        goto waiting
+    
+
+    
+    
+    # OTHER OPERATIONS #########################################################
+
+    getallthatshitouttahere:
+        r3 := endvalstack
+        goto waiting
+
+
+    printUnderflow2:
+        pop r5 off stack r2
+        pop r4 off stack r2
+        output "Stack underflow---expected at least 2 elements\n"
+        goto waiting
+    
+    printUnderflow1:
+        pop r5 off stack r2
+        pop r4 off stack r2
+        output "Stack underflow---expected at least 1 element\n"
         goto waiting
