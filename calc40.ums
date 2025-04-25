@@ -29,7 +29,8 @@
     
 
     m[r0][jumptable + ' '] := waiting
-    m[r0][jumptable + '\n'] := print
+    m[r0][jumptable + '*'] := multiply
+    m[r0][jumptable + '\n'] := callPrint
     
 
 .section text
@@ -59,8 +60,13 @@
 
     entering:
         r5 := input()
-        if (r5 <s '0') goto jump using r4
-        if (r5 >s '9') goto jump using r4
+
+        push r1 on stack r2
+
+        if (r5 <s '0') goto jump using r1
+        if (r5 >s '9') goto jump using r1
+
+        pop r1 off stack r2
 
         r5 := r5 - 48
         pop r4 off stack r3
@@ -72,7 +78,7 @@
 
 
     input_error:
-        output "Unknown character ' "
+        output "Unknown character '"
         output r5
         output "'\n"
         goto waiting
@@ -84,5 +90,17 @@
         goto entering
 
     jump:
+        pop r1 off stack r2
         r5 := jumptable + r5
         goto m[r0][r5]
+
+    multiply:
+        output "in multiply"
+
+
+        goto waiting
+
+    callPrint:
+
+
+        goto print
