@@ -7,7 +7,7 @@
     .temps r6, r7
 
     r3 := endvalstack
-    .section rodata
+    .section data
     .space 100000
     endvalstack:
 
@@ -101,6 +101,24 @@
         goto waiting
 
     callPrint:
+        push r5 on stack r2
+        push r4 on stack r2
+        r5 := endvalstack - r3
+        goto printLoop
 
-
+    
+    printLoop:
+        if (r5 == r0) goto cleanPrint using r4
+        r5 := r5 - 1
+        r4 := endvalstack - r3
+        r4 := r4 - 1
+        r4 := r4 - r5
+        
+        push r5 on stack r2 # keep counter
+        push r4 on stack r2 # reach number
         goto print
+
+    cleanPrint:
+        pop r4 off stack r2
+        pop r5 off stack r2
+        goto waiting

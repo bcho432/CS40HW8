@@ -5,14 +5,17 @@
 .section text
 
 print:
-    push r1 on stack r2
+    pop r4 off stack r2 # reach number
+    
+    push r1 on stack r2 # save previous r1
 
     r1 := r3 # address of r3 stack before adding digits
-
     push r1 on stack r2
 
+    r1 := r3 + r4 # address of r3 stack before adding digits + reach
+
     output ">>> "
-    r5 := m[r0][r3]
+    r5 := m[r0][r1] # get the value at the top of stack + reach
 
     if (r5 == r0) goto zero using r1
     if (r5 >s r0) goto positive using r1
@@ -21,8 +24,10 @@ print:
 
 afterPrint:
     pop r1 off stack r2
+    pop r5 off stack r2
     output '\n'
-    goto waiting
+
+    goto printLoop
 
 zero:
     output '0'
