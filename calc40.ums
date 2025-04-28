@@ -173,22 +173,25 @@
         push r4 on stack r2
         push r5 on stack r2
 
-        push r1 on stack r2
+        # push r1 on stack r2
         r5 := endvalstack - r3 # num elements on r3 stack
         if (r5 <s 2) goto printUnderflow2 using r4
 
-        pop r1 off stack r2
+        # pop r1 off stack r2
         pop r4 off stack r3
         pop r5 off stack r3
+
+        push r1 on stack r2
 
         if (r4 == r0) goto divZero using r1 # case for diving by zero
         # case for when the first number is a negative i
         if (r4 <s r0) goto divFirstNeg using r1 
         # case for when the second number is negative, 
-        if (r5 <s r0) goto divPosNeg using r1
+        if (r5 <s r0) goto divNegPos using r1
         
         # Pos pos division
         r4 := r5 / r4
+        pop r1 off stack r2
         push r4 on stack r3
 
         goto instructionEnd
@@ -205,10 +208,11 @@
         # negative
         if (r5 <s r0) goto divNegNeg using r1 
         # else, this means the second number is positive 
-        goto divNegPos using r1
+        goto divPosNeg using r1
 
     divNegNeg:
         # case for dividing two numbers when both numbers are negative
+        pop r1 off stack r2
         r4 := -r4
         r5 := -r5
         r4 := r5 / r4
@@ -216,9 +220,11 @@
 
         goto instructionEnd
 
-    divNegPos:
+    divPosNeg:                              # changed from NegPos to PosNeg because it was switched
         # case for diving when first number is negative and second number 
         # is positive
+        # pop r1 off stack r2
+        pop r1 off stack r2
         r4 := -r4
         r4 := r5 / r4
         r4 := -r4
@@ -226,7 +232,8 @@
 
         goto instructionEnd
     
-    divPosNeg:
+    divNegPos:
+        pop r1 off stack r2
         r5 := -r5
         r4 := r5 / r4
         r4 := -r4
